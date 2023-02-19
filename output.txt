@@ -1,8 +1,3 @@
 192.168.1.200 - Conectado!
 192.168.2.200 - Conectado!
 192.168.3.200 - Conectado!
-192.168.4.20 - Conectado!
-192.168.5.200 - Conectado!
-192.168.6.200 - Conectado!
-192.168.7.200 - não conectado
-192.168.8.200 - Conectado!

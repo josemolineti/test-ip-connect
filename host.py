@@ -12,9 +12,9 @@ with open("iplist.txt") as file:
 
 
 
-    def test_conexao(temp):
+    for ip in temp:
         resultado = os.popen(f"ping {ip}").read()
-        if(("unreachable") or ("Request time out")) in resultado:
+        if(("unreachable") or ("Request time out") or ("inacessível") or ("A vida útil (TTL) expirou em trânsito.")) in resultado:
             print(resultado)
             arq = open("output.txt", "a")
             arq.write(str(ip) + ' - não conectado'+"\n")
