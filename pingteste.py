@@ -1,43 +1,53 @@
 import subprocess
 import threading
 import tkinter as tk
+from tkinter import simpledialog, messagebox
+import sqlite3
 
-ip_list = [
-    '192.168.1.200',
-    '192.168.2.200',
-    '192.168.3.200',
-    '192.168.4.200',
-    '192.168.5.200',
-    '192.168.6.200',
-    '192.168.7.200',
-    '192.168.8.200',
-    '192.168.9.200',
-    '192.168.10.200',
-    '192.168.11.200',
-    '192.168.12.200',
-    '192.168.13.200',
-    '192.168.14.200',
-    '192.168.15.200',
-    '192.168.16.200',
-    '192.168.17.200',
-    '192.168.18.200',
-    '192.168.19.200',
-    '192.168.20.200',
-    '192.168.21.200',
-    '192.168.22.200',
-    '192.168.23.200',
-    '192.168.24.200',
-    '192.168.25.200',
-    '192.168.26.200',
-    '192.168.27.200',
-    '192.168.28.200',
-    '192.168.29.200',
-    '192.168.30.200',
-    '192.168.31.200',
-    '192.168.32.200',
-    '192.168.33.200',
-    '192.168.34.200'
-]
+
+data = sqlite3.connect('data_ip.db')
+cursor = data.cursor()
+
+cursor.execute("CREATE TABLE IF NOT EXISTS ips (ident integer, id string, ip string)")
+
+def inserir_inicial():
+    i = 1
+    while i < 35:
+        print(i)
+        aux = '192.168.' + str(i) + '.200'
+        aux1 = str(i) + '.200.'
+        print(aux)
+        print(aux1)
+        cursor.execute(f"INSERT INTO ips (ident, id, ip) VALUES(?, ?, ?)", [i, aux1, aux])
+        i = i + 1
+
+    data.commit()
+    data.close()
+
+
+
+
+ip_list = []
+
+
+def select():
+    try:
+        cursor.execute(f"SELECT ip FROM ips")
+        temp = cursor.fetchall()
+        i = 0
+        while i < len(temp):
+            ip_list.append(temp[i][0])
+            i = i + 1
+
+        print(ip_list)
+
+        data.close()
+    except sqlite3.Error as error:
+        print(error)
+
+select()
+
+
 
 def ping(ip):
     try:
@@ -51,15 +61,27 @@ def atualizar():
         result = ping(ip)
         cor = 'green' if result else 'red'
         labels[i].config(bg=cor, foreground="white")
-    tela.after(300000, atualizar)
+    tela.after(180000, atualizar)
 
 def botao_atualizar():
     atualizar()
 
 
+def inserir():
+    msg = simpledialog.askstring(title="Insira o IP", prompt="Insira o Final do IP - Ex: 1.200")
+    print(msg)
+    if msg == '':
+        messagebox.showerror("Erro", "Insira um IP")
+        inserir()
+    elif msg == None:
+        messagebox.showwarning("Atenção", "Nenhum IP foi inserido.")
+    else:
+        pass
+
+
 tela = tk.Tk()
 tela.title("Ip - Verificar")
-tela.geometry("200x750")
+tela.geometry("200x800")
 labels = []
 for ip in ip_list:
     label = tk.Label(tela, text=ip)
@@ -67,7 +89,10 @@ for ip in ip_list:
     labels.append(label)
 
 button = tk.Button(tela, text='Atualizar', command=botao_atualizar)
-button.pack()
+button.pack(padx=10, pady=10)
+
+buttonA = tk.Button(tela, text='Inserir', command=inserir)
+buttonA.pack()
 
 atualizar_label = threading.Thread(target=atualizar)
 atualizar_label.start()
