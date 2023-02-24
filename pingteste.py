@@ -10,6 +10,7 @@ cursor = data.cursor()
 
 cursor.execute("CREATE TABLE IF NOT EXISTS ips (ident integer, id string, ip string)")
 
+
 def inserir_inicial():
     i = 1
     while i < 35:
@@ -76,7 +77,37 @@ def inserir():
     elif msg == None:
         messagebox.showwarning("Atenção", "Nenhum IP foi inserido.")
     else:
-        pass
+        data = sqlite3.connect('data_ip.db')
+        cursor = data.cursor()
+
+        cursor.execute("SELECT id FROM ips")
+        aux = cursor.fetchall()
+        ident = len(aux) + 1
+        id = msg + '.'
+        ip = '192.168.' + msg
+
+        j =0
+        while j < len(aux):
+            if id != aux[j][0]:
+                messagebox.showerror("Erro", "O IP já exite na lista.")
+                break
+
+
+            j = j +1
+            print(j)
+
+
+            #ARRUMAR AQUI ------ FAZER A CONDICIONAL PARA CASO NÃO TENHA ERRO, INSERIR NO BANCO
+            data = sqlite3.connect('data_ip.db')
+            cursor = data.cursor()
+            cursor.execute(f"INSERT INTO ips (ident, id, ip) VALUES (?, ?, ?)", [ident, id, ip])
+
+            data.close()
+            cursor.close()
+
+
+        messagebox.showinfo("Sucesso", "IP " + ip + " inserido com sucesso!")
+
 
 
 tela = tk.Tk()
