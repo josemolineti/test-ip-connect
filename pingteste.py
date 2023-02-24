@@ -9,9 +9,12 @@ data = sqlite3.connect('data_ip.db')
 cursor = data.cursor()
 
 cursor.execute("CREATE TABLE IF NOT EXISTS ips (ident integer, id string, ip string)")
-
+data.commit()
+data.close()
 
 def inserir_inicial():
+    data = sqlite3.connect('data_ip.db')
+    cursor = data.cursor()
     i = 1
     while i < 35:
         print(i)
@@ -28,11 +31,13 @@ def inserir_inicial():
 
 
 
-ip_list = []
 
+ip_list = []
 
 def select():
     try:
+        data = sqlite3.connect('data_ip.db')
+        cursor = data.cursor()
         cursor.execute(f"SELECT ip FROM ips")
         temp = cursor.fetchall()
         i = 0
@@ -40,11 +45,13 @@ def select():
             ip_list.append(temp[i][0])
             i = i + 1
 
+
         print(ip_list)
 
-        data.close()
+        cursor.close()
+
     except sqlite3.Error as error:
-        print(error)
+        messagebox.showerror("Erro",error)
 
 select()
 
@@ -58,6 +65,12 @@ def ping(ip):
         return False
 
 def atualizar():
+    select()
+    for ip in ip_list:
+        label = tk.Label(tela, text=ip)
+        label.pack()
+        labels.append(label)
+
     for i, ip in enumerate(ip_list):
         result = ping(ip)
         cor = 'green' if result else 'red'
@@ -88,26 +101,41 @@ def inserir():
 
         j =0
         while j < len(aux):
-            if id != aux[j][0]:
+            if id == aux[j][0]:
                 messagebox.showerror("Erro", "O IP já exite na lista.")
-                break
+                return False
+
+
 
 
             j = j +1
             print(j)
 
-
-            #ARRUMAR AQUI ------ FAZER A CONDICIONAL PARA CASO NÃO TENHA ERRO, INSERIR NO BANCO
-            data = sqlite3.connect('data_ip.db')
-            cursor = data.cursor()
+        if True:
             cursor.execute(f"INSERT INTO ips (ident, id, ip) VALUES (?, ?, ?)", [ident, id, ip])
+            data.commit()
 
-            data.close()
+
             cursor.close()
 
+            print(ip_list)
+            messagebox.showinfo("Sucesso", "IP " + ip + " inserido com sucesso!")
+            atualizar()
 
-        messagebox.showinfo("Sucesso", "IP " + ip + " inserido com sucesso!")
 
+
+
+
+        cursor.close()
+
+
+
+
+
+        #ARRUMAR AQUI ------ FAZER A CONDICIONAL PARA CASO NÃO TENHA ERRO, INSERIR NO BANCO
+
+def test():
+    tela.destroy()
 
 
 tela = tk.Tk()
