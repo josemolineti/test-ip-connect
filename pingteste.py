@@ -11,6 +11,7 @@ def main():
     cursor = data.cursor()
 
     cursor.execute("CREATE TABLE IF NOT EXISTS ips (ident integer, id string, ip string)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS coord (x integer, y integer)")
     data.commit()
     data.close()
 
@@ -31,6 +32,10 @@ def main():
         data.close()
 
     ip_list = []
+
+    def reset():
+        tela.destroy()
+        main()
 
     def select():
         try:
@@ -61,14 +66,25 @@ def main():
 
     def atualizar():
         horario = datetime.now()
-        a = tk.Label(tela, text="Atualizado - "+str(horario.hour)+":"+str(horario.minute))
+        horarioFinal = tk.StringVar()
+        horarioFinal.set("Atualizado - " + str(horario.hour) + ":" + str(horario.minute))
+        a = tk.Label(tela, textvariable=horarioFinal)
+        a.pack(side=tk.RIGHT)
         #MUDAR O PLACE PARA PACK
-        a.place(x="200", y="10")
-        for i, ip in enumerate(ip_list):
-            result = ping(ip)
-            cor = 'green' if result else 'red'
-            labels[i].config(bg=cor, foreground="white")
-        tela.after(180000, atualizar)
+
+        try:
+            for i, ip in enumerate(ip_list):
+                result = ping(ip)
+                cor = 'green' if result else 'red'
+                labels[i].config(bg=cor, foreground="white")
+            tela.after(180000, atualizar)
+        except Exception as erro:
+            if str(erro) == "list index out of range":
+                messagebox.showerror("Erro", "Erro de indice, aperte em OK para reiniciar.")
+                reset()
+
+
+
 
     def botao_atualizar():
         atualizar()
@@ -113,9 +129,6 @@ def main():
 
             cursor.close()
 
-    def reset():
-        tela.destroy()
-        main()
 
     tela = tk.Tk()
     tela.title("Ip - Verificar")
@@ -125,7 +138,7 @@ def main():
     for ip in ip_list:
         label = tk.Label(tela, text=ip)
         label.pack()
-    labels.append(label)
+        labels.append(label)
 
 
     button = tk.Button(tela, text='Atualizar', command=botao_atualizar)
@@ -133,6 +146,7 @@ def main():
 
     buttonA = tk.Button(tela, text='Inserir', command=inserir)
     buttonA.pack()
+
 
     atualizar_label = threading.Thread(target=atualizar)
     atualizar_label.start()
