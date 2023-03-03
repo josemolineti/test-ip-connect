@@ -20,11 +20,8 @@ def main():
         cursor = data.cursor()
         i = 1
         while i < 35:
-            print(i)
             aux = '192.168.' + str(i) + '.200'
             aux1 = str(i) + '.200.'
-            print(aux)
-            print(aux1)
             cursor.execute(f"INSERT INTO ips (ident, id, ip) VALUES(?, ?, ?)", [i, aux1, aux])
             i = i + 1
 
@@ -47,8 +44,6 @@ def main():
             while i < len(temp):
                 ip_list.append(temp[i][0])
                 i = i + 1
-
-            print(ip_list)
 
             cursor.close()
 
@@ -90,13 +85,66 @@ def main():
         atualizar()
 
     def inserir():
-        msg = simpledialog.askstring(title="Insira o IP", prompt="Insira o Final do IP - Ex: 1.200")
-        print(msg)
+        msg = simpledialog.askstring(title="Inserir novo IP", prompt="Digite o Final do IP que deseja inserir\n\nEx: 1.200")
         if msg == '':
-            messagebox.showerror("Erro", "Insira um IP")
+            messagebox.showerror("Erro", "Digite um IP")
             inserir()
         elif msg == None:
-            messagebox.showwarning("Atenção", "Nenhum IP foi inserido.")
+            messagebox.showwarning("Atenção", "Nenhum IP foi inserido.\n\nOperação cancelada.")
+        else:
+            data = sqlite3.connect('data_ip.db')
+            cursor = data.cursor()
+
+            cursor.execute("SELECT id FROM ips")
+            aux = cursor.fetchall()
+            id = msg + '.'
+            ip = '192.168.' + msg
+
+            #ARRUMAR AQUI####
+            j = 0
+            while j < len(aux):
+                if id == aux[j][0]:
+                    messagebox.showerror("Erro", "O IP " + ip + " já exite na lista.")
+                    inserir()
+                    return False
+
+
+                j = j + 1
+
+            if len(msg) == 5:
+                ident = msg[0]
+            elif len(msg) == 6:
+                auxiliar = slice(0, 2)
+                ident = msg[auxiliar]
+            elif len(msg) == 7:
+                auxiliar = slice(0, 3)
+                ident = msg[auxiliar]
+
+                if int(msg[auxiliar]) < 100 or int(msg[auxiliar]) > 255:
+                    messagebox.showerror("Erro", "Digite um IP válido.")
+                    inserir()
+            else:
+                messagebox.showerror("Erro", "Digite um IP válido.")
+                inserir()
+
+            if True:
+                cursor.execute(f"INSERT INTO ips (ident, id, ip) VALUES (?, ?, ?)", [int(ident), id, ip])
+                data.commit()
+                cursor.close()
+
+                messagebox.showinfo("Sucesso", "IP " + ip + " inserido com sucesso!")
+                reset()
+
+            cursor.close()
+
+    def remover():
+        msg = simpledialog.askstring(title="Remover IP", prompt="Digite o Final do IP que deseja remover\n\nEx: 1.200")
+        if msg == '':
+            messagebox.showerror("Erro", "Digite um IP")
+            remover()
+        elif msg == None:
+            messagebox.showwarning("Atenção", "Nenhum IP foi inserido.\n\nOperação cancelada.")
+
         else:
             data = sqlite3.connect('data_ip.db')
             cursor = data.cursor()
@@ -107,27 +155,6 @@ def main():
             id = msg + '.'
             ip = '192.168.' + msg
 
-            j = 0
-            while j < len(aux):
-                if id == aux[j][0]:
-                    messagebox.showerror("Erro", "O IP já exite na lista.")
-                    return False
-
-                j = j + 1
-                print(j)
-
-            if True:
-                cursor.execute(f"INSERT INTO ips (ident, id, ip) VALUES (?, ?, ?)", [ident, id, ip])
-                data.commit()
-
-                cursor.close()
-
-                print(ip_list)
-                messagebox.showinfo("Sucesso", "IP " + ip + " inserido com sucesso!")
-                reset()
-
-
-            cursor.close()
 
 
     tela = tk.Tk()
