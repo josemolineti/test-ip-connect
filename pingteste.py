@@ -100,50 +100,62 @@ def main():
             id = msg + '.'
             ip = '192.168.' + msg
 
-            #ARRUMAR AQUI####
+
             j = 0
             while j < len(aux):
+
+
                 if id == aux[j][0]:
-                    messagebox.showerror("Erro", "O IP " + ip + " já exite na lista.")
+                    messagebox.showerror("Erro", "O IP " + ip + " já exite na lista ou não é um IP válido.")
                     inserir()
                     return False
 
 
+
+
                 j = j + 1
 
-            if len(msg) == 5:
-                ident = msg[0]
-            elif len(msg) == 6:
-                auxiliar = slice(0, 2)
-                ident = msg[auxiliar]
-            elif len(msg) == 7:
-                auxiliar = slice(0, 3)
-                ident = msg[auxiliar]
+            if True:
+                if len(msg) == 5:
+                    ident = msg[0]
+                    cursor.execute(f"INSERT INTO ips (ident, id, ip) VALUES (?, ?, ?)", [int(ident), id, ip])
+                    data.commit()
+                    cursor.close()
+                    messagebox.showinfo("Sucesso", "IP " + ip + " inserido com sucesso!")
+                    reset()
 
-                if int(msg[auxiliar]) < 100 or int(msg[auxiliar]) > 255:
+                elif len(msg) == 6:
+                    auxiliar = slice(0, 2)
+                    ident = msg[auxiliar]
+                    cursor.execute(f"INSERT INTO ips (ident, id, ip) VALUES (?, ?, ?)", [int(ident), id, ip])
+                    data.commit()
+                    cursor.close()
+                    messagebox.showinfo("Sucesso", "IP " + ip + " inserido com sucesso!")
+                    reset()
+
+                elif len(msg) == 7:
+                    auxiliar = slice(0, 3)
+                    ident = msg[auxiliar]
+
+                    if int(msg[auxiliar]) < 100 or int(msg[auxiliar]) > 255:
+                        messagebox.showerror("Erro", "Digite um IP válido.")
+                        inserir()
+                    else:
+                        cursor.execute(f"INSERT INTO ips (ident, id, ip) VALUES (?, ?, ?)", [int(ident), id, ip])
+                        data.commit()
+                        cursor.close()
+                        messagebox.showinfo("Sucesso", "IP " + ip + " inserido com sucesso!")
+                        reset()
+                else:
                     messagebox.showerror("Erro", "Digite um IP válido.")
                     inserir()
-            else:
-                messagebox.showerror("Erro", "Digite um IP válido.")
-                inserir()
-
-            if True:
-                cursor.execute(f"INSERT INTO ips (ident, id, ip) VALUES (?, ?, ?)", [int(ident), id, ip])
-                data.commit()
-                cursor.close()
-
-                messagebox.showinfo("Sucesso", "IP " + ip + " inserido com sucesso!")
-                reset()
-
-            cursor.close()
-
     def remover():
         msg = simpledialog.askstring(title="Remover IP", prompt="Digite o Final do IP que deseja remover\n\nEx: 1.200")
         if msg == '':
             messagebox.showerror("Erro", "Digite um IP")
             remover()
         elif msg == None:
-            messagebox.showwarning("Atenção", "Nenhum IP foi inserido.\n\nOperação cancelada.")
+            messagebox.showwarning("Atenção", "Nenhum IP foi removido.\n\nOperação cancelada.")
 
         else:
             data = sqlite3.connect('data_ip.db')
@@ -151,9 +163,25 @@ def main():
 
             cursor.execute("SELECT id FROM ips")
             aux = cursor.fetchall()
-            ident = len(aux) + 1
             id = msg + '.'
             ip = '192.168.' + msg
+
+            j=0
+            while j < len(aux):
+                if id == aux[j][0]:
+                    cursor.execute("DELETE FROM ips WHERE id = ?", [id])
+                    data.commit()
+                    cursor.close()
+                    messagebox.showinfo("Sucesso!", "O IP "+ ip +" foi removido com sucesso!")
+                    return False
+
+
+                j = j + 1
+
+            if True:
+                messagebox.showerror("Erro", "O IP " + ip + " não existe na lista.")
+                remover()
+
 
 
 
@@ -173,6 +201,9 @@ def main():
 
     buttonA = tk.Button(tela, text='Inserir', command=inserir)
     buttonA.pack()
+
+    botao2 = tk.Button(tela, text='Remover', command=remover)
+    botao2.pack()
 
 
     atualizar_label = threading.Thread(target=atualizar)
