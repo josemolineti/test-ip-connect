@@ -59,14 +59,17 @@ def main():
         except subprocess.CalledProcessError:
             return False
 
-    def atualizar():
-        horario = datetime.now()
-        horarioFinal = tk.StringVar()
-        horarioFinal.set("Atualizado - " + str(horario.hour) + ":" + str(horario.minute))
-        a = tk.Label(tela, textvariable=horarioFinal)
-        a.pack(side=tk.RIGHT)
-        #MUDAR O PLACE PARA PACK
+    #ARRUMAR AQUI
+    def horaAtt():
+        a.pack_forget()
 
+    def atualizar():
+        global a
+        horaAtt()
+        horario = datetime.now()
+        horarioFinal = ("Atualizado - " + str(horario.hour) + ":" + str(horario.minute))
+        a = tk.Label(tela, text=horarioFinal)
+        a.pack()
         try:
             for i, ip in enumerate(ip_list):
                 result = ping(ip)
@@ -77,8 +80,6 @@ def main():
             if str(erro) == "list index out of range":
                 messagebox.showerror("Erro", "Erro de indice, aperte em OK para reiniciar.")
                 reset()
-
-
 
 
     def botao_atualizar():
@@ -173,6 +174,7 @@ def main():
                     data.commit()
                     cursor.close()
                     messagebox.showinfo("Sucesso!", "O IP "+ ip +" foi removido com sucesso!")
+                    reset()
                     return False
 
 
@@ -186,8 +188,19 @@ def main():
 
 
     tela = tk.Tk()
+    data = sqlite3.connect('data_ip.db')
+    cursor = data.cursor()
+
+    cursor.execute("SELECT x FROM coord")
+    x = cursor.fetchall()
+    cursor.execute("SELECT y FROM coord")
+    y = cursor.fetchall()
+
+    coord = (str(x[0][0]) + "x" + str(y[0][0]))
+    print(coord)
+
     tela.title("Ip - Verificar")
-    tela.geometry("300x850")
+    tela.geometry(coord)
 
     labels = []
     for ip in ip_list:
