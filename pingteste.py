@@ -1,6 +1,6 @@
 import subprocess
 import threading
-import tkinter as tk
+from tkinter import *
 from tkinter import simpledialog, messagebox
 import sqlite3
 from datetime import *
@@ -59,17 +59,7 @@ def main():
         except subprocess.CalledProcessError:
             return False
 
-    #ARRUMAR AQUI
-    def horaAtt():
-        a.pack_forget()
-
     def atualizar():
-        global a
-        horaAtt()
-        horario = datetime.now()
-        horarioFinal = ("Atualizado - " + str(horario.hour) + ":" + str(horario.minute))
-        a = tk.Label(tela, text=horarioFinal)
-        a.pack()
         try:
             for i, ip in enumerate(ip_list):
                 result = ping(ip)
@@ -185,9 +175,29 @@ def main():
                 remover()
 
 
+    def sair():
+        msg = messagebox.askyesno("Sair", "Tem certeza que deseja sair?")
+
+        if msg == 'Yes':
+            print("OI")
+        else:
+            print("Não")
 
 
-    tela = tk.Tk()
+    tela =Tk()
+
+    ######ARRUMAR AQUI
+    barraMenu=Menu(tela)
+    btnOpc=Menu(barraMenu, tearoff=0)
+
+    btnOpc.add_command(label="Inserir", command=inserir)
+    btnOpc.add_command(label="Remover", command=remover)
+    btnOpc.add_separator()
+    btnOpc.add_command(label="Sair", command=sair)
+    barraMenu.add_cascade(label="Menu", menu=barraMenu)
+
+    tela.config(menu=barraMenu)
+
     data = sqlite3.connect('data_ip.db')
     cursor = data.cursor()
 
@@ -204,23 +214,23 @@ def main():
 
     labels = []
     for ip in ip_list:
-        label = tk.Label(tela, text=ip)
+        label =Label(tela, text=ip)
         label.pack()
         labels.append(label)
 
-
-    button = tk.Button(tela, text='Atualizar', command=botao_atualizar)
+    button =Button(tela, text='Atualizar', command=botao_atualizar)
     button.pack(padx=10, pady=10)
 
-    buttonA = tk.Button(tela, text='Inserir', command=inserir)
-    buttonA.pack()
-
-    botao2 = tk.Button(tela, text='Remover', command=remover)
-    botao2.pack()
+    #buttonA = tk.Button(tela, text='Inserir', command=inserir)
+    #buttonA.pack()
+#
+    #botao2 = tk.Button(tela, text='Remover', command=remover)
+    #botao2.pack()
 
 
     atualizar_label = threading.Thread(target=atualizar)
     atualizar_label.start()
+
 
     tela.mainloop()
 
