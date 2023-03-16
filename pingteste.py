@@ -11,7 +11,8 @@ def main():
     cursor = data.cursor()
 
     cursor.execute("CREATE TABLE IF NOT EXISTS ips (ident integer, id string, ip string)")
-    cursor.execute("CREATE TABLE IF NOT EXISTS coord (x integer, y integer)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS coord (id integer, x integer, y integer, alert integer)")
+    #cursor.execute("INSERT INTO coord (id, x, y, alert) VALUES(1, 300, 760, 1)")
     data.commit()
     data.close()
 
@@ -101,17 +102,16 @@ def main():
                     inserir()
                     return False
 
-
-
-
                 j = j + 1
 
             if True:
                 if len(msg) == 5:
                     ident = msg[0]
                     cursor.execute(f"INSERT INTO ips (ident, id, ip) VALUES (?, ?, ?)", [int(ident), id, ip])
+
                     data.commit()
                     cursor.close()
+                    tamTela(1)
                     messagebox.showinfo("Sucesso", "IP " + ip + " inserido com sucesso!")
                     reset()
 
@@ -119,8 +119,10 @@ def main():
                     auxiliar = slice(0, 2)
                     ident = msg[auxiliar]
                     cursor.execute(f"INSERT INTO ips (ident, id, ip) VALUES (?, ?, ?)", [int(ident), id, ip])
+
                     data.commit()
                     cursor.close()
+                    tamTela(1)
                     messagebox.showinfo("Sucesso", "IP " + ip + " inserido com sucesso!")
                     reset()
 
@@ -133,8 +135,10 @@ def main():
                         inserir()
                     else:
                         cursor.execute(f"INSERT INTO ips (ident, id, ip) VALUES (?, ?, ?)", [int(ident), id, ip])
+
                         data.commit()
                         cursor.close()
+                        tamTela(1)
                         messagebox.showinfo("Sucesso", "IP " + ip + " inserido com sucesso!")
                         reset()
                 else:
@@ -163,6 +167,8 @@ def main():
                     cursor.execute("DELETE FROM ips WHERE id = ?", [id])
                     data.commit()
                     cursor.close()
+
+                    tamTela(0)
                     messagebox.showinfo("Sucesso!", "O IP "+ ip +" foi removido com sucesso!")
                     reset()
                     return False
@@ -175,27 +181,99 @@ def main():
                 remover()
 
 
+    def tamTela(aux):
+        data = sqlite3.connect('data_ip.db')
+        cursor = data.cursor()
+
+        if aux == 1:
+            cursor.execute("SELECT y FROM coord")
+            y = cursor.fetchall()
+            yAux = y[0][0] + 20
+
+            cursor.execute("UPDATE coord SET y = ? WHERE id = 1", [yAux])
+        else:
+            cursor.execute("SELECT y FROM coord")
+            y = cursor.fetchall()
+            yAux = y[0][0] - 20
+
+            cursor.execute("UPDATE coord SET y = ? WHERE id = 1", [yAux])
+
+        data.commit()
+        cursor.close()
+
+
+    def ajuda(param=0):
+        data = sqlite3.connect('data_ip.db')
+        cursor = data.cursor()
+
+        cursor.execute("SELECT alert FROM coord")
+        aux = cursor.fetchall()
+
+        if aux[0][0] == 1 or param == 1:
+            alert = messagebox.askokcancel("Bem-vindo(a)","Botão Atualizar - Atualiza a página e recarrega os IP's\n\nEditar:\n- Opção Inserir - Adiciona um novo IP na lista;\n- Opção Remover - Remove um IP da lista;\n- Sair - Fecha o aplicativo.\n\nAjuda:\n- Ative ou desative esse Pop-Up ao iniciar o app.")
+        else:
+            pass
+
+    def ativaAjuda():
+        data = sqlite3.connect('data_ip.db')
+        cursor = data.cursor()
+
+        cursor.execute("SELECT alert FROM coord")
+        aux = cursor.fetchall()
+
+        if aux[0][0] == 0:
+            cursor.execute("UPDATE coord SET alert = ? WHERE id = 1", [1])
+            messagebox.showinfo("Ajuda", "Pop-Up de ajuda voltará a aparecer quando o aplicativo for iniciado.")
+        else:
+            messagebox.showerror("Erro", "A ajuda já está ativa!")
+
+        data.commit()
+        cursor.close()
+
+    def removeAjuda():
+        data = sqlite3.connect('data_ip.db')
+        cursor = data.cursor()
+
+        cursor.execute("SELECT alert FROM coord")
+        aux = cursor.fetchall()
+
+        if aux[0][0] == 1:
+            cursor.execute("UPDATE coord SET alert = ? WHERE id = 1", [0])
+            messagebox.showinfo("Ajuda", "Pop-Up de ajuda não irá aparecer quando o aplicativo for iniciado.")
+        else:
+            messagebox.showerror("Erro", "A ajuda já está desativada.")
+
+        data.commit()
+        cursor.close()
+
+    def ajudaAux():
+        ajuda(1)
     def sair():
         msg = messagebox.askyesno("Sair", "Tem certeza que deseja sair?")
 
-        if msg == 'Yes':
-            print("OI")
+        if msg == True:
+            exit()
         else:
-            print("Não")
+            pass
 
 
     tela =Tk()
-
-    ######ARRUMAR AQUI
-    barraMenu=Menu(tela)
-    btnOpc=Menu(barraMenu, tearoff=0)
+    barraMenu = Menu(tela)
+    btnOpc = Menu(barraMenu, tearoff=0)
 
     btnOpc.add_command(label="Inserir", command=inserir)
     btnOpc.add_command(label="Remover", command=remover)
     btnOpc.add_separator()
     btnOpc.add_command(label="Sair", command=sair)
-    barraMenu.add_cascade(label="Menu", menu=barraMenu)
 
+    barraMenu.add_cascade(label="Editar", menu=btnOpc)
+
+    btnAjuda = Menu(barraMenu, tearoff=0)
+    btnAjuda.add_command(label="Instruções", command=ajudaAux)
+    btnAjuda.add_command(label="Mostrar ajuda ao iniciar", command=ativaAjuda)
+    btnAjuda.add_command(label="Não mostrar ajuda ao iniciar", command=removeAjuda)
+
+    barraMenu.add_cascade(label="Ajuda", menu=btnAjuda)
     tela.config(menu=barraMenu)
 
     data = sqlite3.connect('data_ip.db')
@@ -221,16 +299,10 @@ def main():
     button =Button(tela, text='Atualizar', command=botao_atualizar)
     button.pack(padx=10, pady=10)
 
-    #buttonA = tk.Button(tela, text='Inserir', command=inserir)
-    #buttonA.pack()
-#
-    #botao2 = tk.Button(tela, text='Remover', command=remover)
-    #botao2.pack()
-
+    ajuda()
 
     atualizar_label = threading.Thread(target=atualizar)
     atualizar_label.start()
-
 
     tela.mainloop()
 
